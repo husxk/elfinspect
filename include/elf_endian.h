@@ -16,3 +16,6 @@ const char *get_elf_endian_str(const elf_header *header);
 bool elf_read_u16(file_t *f, elf_header *header, uint16_t *out);
 bool elf_read_u32(file_t *f, elf_header *header, uint32_t *out);
 bool elf_read_u64(file_t *f, elf_header *header, uint64_t *out);
+
+size_t elf_word_size(const elf_header *header);
+bool elf_read_word(file_t *f, elf_header *header, uint64_t *out);

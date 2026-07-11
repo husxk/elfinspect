@@ -145,3 +145,45 @@ elf_read_u64(file_t *f, elf_header *header, uint64_t *out)
   *out = to_host_u64_raw(raw, header->endian);
   return true;
 }
+
+size_t
+elf_word_size(const elf_header *header)
+{
+  if (!header)
+    return 0;
+
+  if (header->class == ELF_CLASS_64)
+    return 8;
+
+  if (header->class == ELF_CLASS_32)
+    return 4;
+
+  return 0;
+}
+
+bool
+elf_read_word(file_t *f, elf_header *header, uint64_t *out)
+{
+  size_t size;
+
+  if (!out || !header)
+    return false;
+
+  size = elf_word_size(header);
+  if (size == 8)
+    return elf_read_u64(f, header, out);
+
+  if (size == 4)
+  {
+    uint32_t v;
+
+    if (!elf_read_u32(f, header, &v))
+      return false;
+
+    *out = v;
+    return true;
+  }
+
+  fprintf(stderr, "elf_read_word: invalid class 0x%02x\n", header->class);
+  return false;
+}

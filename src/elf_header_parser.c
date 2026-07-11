@@ -1,5 +1,6 @@
 #include "elf_header_parser.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 
 #include "elf_endian.h"
@@ -129,6 +130,41 @@ parse_elf_header_version(file_t *f, elf_header *header)
   return ret;
 }
 
+static bool
+parse_elf_entry(file_t *f, elf_header *header)
+{
+  if (!elf_read_word(f, header, &header->entry))
+    return false;
+
+  printf("Entry point address 0x%0*" PRIx64 "\n", (int)elf_word_size(header) * 2, header->entry);
+
+  return true;
+}
+
+static bool
+parse_elf_program_header_offset(file_t *f, elf_header *header)
+{
+  if (!elf_read_word(f, header, &header->program_header_offset))
+    return false;
+
+  printf("Program header table offset %" PRIu64 " (0x%" PRIx64 ")\n",
+         header->program_header_offset, header->program_header_offset);
+
+  return true;
+}
+
+static bool
+parse_elf_section_header_offset(file_t *f, elf_header *header)
+{
+  if (!elf_read_word(f, header, &header->section_header_offset))
+    return false;
+
+  printf("Section header table offset %" PRIu64 " (0x%" PRIx64 ")\n",
+         header->section_header_offset, header->section_header_offset);
+
+  return true;
+}
+
 bool
 parse_elf_header(file_t *f, elf_header *header)
 {
@@ -160,6 +196,15 @@ parse_elf_header(file_t *f, elf_header *header)
     return false;
 
   if (!parse_elf_header_version(f, header))
+    return false;
+
+  if (!parse_elf_entry(f, header))
+    return false;
+
+  if (!parse_elf_program_header_offset(f, header))
+    return false;
+
+  if (!parse_elf_section_header_offset(f, header))
     return false;
 
   return true;

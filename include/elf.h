@@ -6,6 +6,9 @@
 
 #define ELF_HEADER_RESERVED 7
 
+#define ELF_CLASS_32 0x01
+#define ELF_CLASS_64 0x02
+
 typedef struct
 {
   uint8_t bytes[4];
@@ -23,6 +26,9 @@ typedef struct
   uint16_t type;
   uint16_t machine;
   uint32_t header_version;
+  uint64_t entry;
+  uint64_t program_header_offset;
+  uint64_t section_header_offset;
 } elf_header;
 
 bool

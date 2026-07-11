@@ -5,9 +5,6 @@
 
 static const char elf_magic_valid[] = "\x7f" "ELF";
 
-#define ELF_CLASS_32 0x01
-#define ELF_CLASS_64 0x02
-
 #define ELF_VERSION_CURRENT 0x01
 
 #define ELF_OSABI_SYSV     0x00
