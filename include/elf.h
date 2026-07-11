@@ -21,6 +21,8 @@ typedef struct
   uint8_t abi_version;
   uint8_t reserved[ELF_HEADER_RESERVED];
   uint16_t type;
+  uint16_t machine;
+  uint32_t header_version;
 } elf_header;
 
 bool
@@ -55,3 +57,15 @@ is_elf_type_valid(elf_header *m);
 
 const char *
 get_elf_type_str(elf_header *m);
+
+bool
+is_elf_machine_valid(elf_header *m);
+
+const char *
+get_elf_machine_str(elf_header *m);
+
+bool
+is_elf_header_version_valid(elf_header *m);
+
+const char *
+get_elf_header_version_str(elf_header *m);

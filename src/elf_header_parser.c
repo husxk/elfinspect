@@ -105,6 +105,30 @@ parse_elf_type(file_t *f, elf_header *header)
   return ret;
 }
 
+static bool
+parse_elf_machine(file_t *f, elf_header *header)
+{
+  if (!elf_read_u16(f, header, &header->machine))
+    return false;
+
+  bool ret = is_elf_machine_valid(header);
+  printf("%s machine %s\n", ret ? "Valid" : "Invalid", get_elf_machine_str(header));
+
+  return ret;
+}
+
+static bool
+parse_elf_header_version(file_t *f, elf_header *header)
+{
+  if (!elf_read_u32(f, header, &header->header_version))
+    return false;
+
+  bool ret = is_elf_header_version_valid(header);
+  printf("%s header version %s\n", ret ? "Valid" : "Invalid", get_elf_header_version_str(header));
+
+  return ret;
+}
+
 bool
 parse_elf_header(file_t *f, elf_header *header)
 {
@@ -130,6 +154,12 @@ parse_elf_header(file_t *f, elf_header *header)
     return false;
 
   if (!parse_elf_type(f, header))
+    return false;
+
+  if (!parse_elf_machine(f, header))
+    return false;
+
+  if (!parse_elf_header_version(f, header))
     return false;
 
   return true;
