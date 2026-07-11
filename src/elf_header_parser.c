@@ -2,18 +2,19 @@
 
 #include <stdio.h>
 
+#include "elf_endian.h"
 #include "log.h"
 
 static bool
 parse_elf_magic(file_t *f, elf_header *header)
 {
-  if (!file_read(f, &header->magic, sizeof(header->magic), sizeof(header->magic)))
+  if (!file_read(f, header->magic.bytes, sizeof(header->magic.bytes), sizeof(header->magic.bytes)))
     return false;
 
   bool ret = is_elf_magic_valid(&header->magic);
   printf("%s magic\n", ret ? "Valid" : "Invalid");
 
-  hexdump_quiet((unsigned char *) &header->magic, sizeof(header->magic));
+  hexdump_quiet(header->magic.bytes, sizeof(header->magic.bytes));
 
   return ret;
 }
@@ -95,7 +96,7 @@ parse_elf_reserved(file_t *f, elf_header *header)
 static bool
 parse_elf_type(file_t *f, elf_header *header)
 {
-  if (!file_read(f, &header->type, sizeof(header->type), sizeof(header->type)))
+  if (!elf_read_u16(f, header, &header->type))
     return false;
 
   bool ret = is_elf_type_valid(header);

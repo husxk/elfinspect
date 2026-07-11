@@ -8,7 +8,7 @@
 
 typedef struct
 {
-  uint32_t magic;
+  uint8_t bytes[4];
 } elf_magic;
 
 typedef struct
@@ -31,12 +31,6 @@ is_elf_class_valid(elf_header *m);
 
 const char *
 get_elf_class_str(elf_header *m);
-
-bool
-is_elf_endian_valid(elf_header *m);
-
-const char *
-get_elf_endian_str(elf_header *m);
 
 bool
 is_elf_version_valid(elf_header *m);
