@@ -165,6 +165,83 @@ parse_elf_section_header_offset(file_t *f, elf_header *header)
   return true;
 }
 
+static bool
+parse_elf_flags(file_t *f, elf_header *header)
+{
+  if (!elf_read_u32(f, header, &header->flags))
+    return false;
+
+  printf("Flags 0x%" PRIx32 "\n", header->flags);
+
+  return true;
+}
+
+static bool
+parse_elf_header_size(file_t *f, elf_header *header)
+{
+  if (!elf_read_u16(f, header, &header->elf_header_size))
+    return false;
+
+  printf("ELF header size %u\n", header->elf_header_size);
+
+  return true;
+}
+
+static bool
+parse_elf_ph_table_entry_size(file_t *f, elf_header *header)
+{
+  if (!elf_read_u16(f, header, &header->ph_table_entry_size))
+    return false;
+
+  printf("Program header table entry size %u\n", header->ph_table_entry_size);
+
+  return true;
+}
+
+static bool
+parse_elf_ph_table_entry_count(file_t *f, elf_header *header)
+{
+  if (!elf_read_u16(f, header, &header->ph_table_entry_count))
+    return false;
+
+  printf("Program header table entry count %u\n", header->ph_table_entry_count);
+
+  return true;
+}
+
+static bool
+parse_elf_sh_table_entry_size(file_t *f, elf_header *header)
+{
+  if (!elf_read_u16(f, header, &header->sh_table_entry_size))
+    return false;
+
+  printf("Section header table entry size %u\n", header->sh_table_entry_size);
+
+  return true;
+}
+
+static bool
+parse_elf_sh_table_entry_count(file_t *f, elf_header *header)
+{
+  if (!elf_read_u16(f, header, &header->sh_table_entry_count))
+    return false;
+
+  printf("Section header table entry count %u\n", header->sh_table_entry_count);
+
+  return true;
+}
+
+static bool
+parse_elf_sh_string_table_index(file_t *f, elf_header *header)
+{
+  if (!elf_read_u16(f, header, &header->sh_string_table_index))
+    return false;
+
+  printf("Section header string table index %u\n", header->sh_string_table_index);
+
+  return true;
+}
+
 bool
 parse_elf_header(file_t *f, elf_header *header)
 {
@@ -205,6 +282,27 @@ parse_elf_header(file_t *f, elf_header *header)
     return false;
 
   if (!parse_elf_section_header_offset(f, header))
+    return false;
+
+  if (!parse_elf_flags(f, header))
+    return false;
+
+  if (!parse_elf_header_size(f, header))
+    return false;
+
+  if (!parse_elf_ph_table_entry_size(f, header))
+    return false;
+
+  if (!parse_elf_ph_table_entry_count(f, header))
+    return false;
+
+  if (!parse_elf_sh_table_entry_size(f, header))
+    return false;
+
+  if (!parse_elf_sh_table_entry_count(f, header))
+    return false;
+
+  if (!parse_elf_sh_string_table_index(f, header))
     return false;
 
   return true;

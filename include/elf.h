@@ -29,6 +29,13 @@ typedef struct
   uint64_t entry;
   uint64_t program_header_offset;
   uint64_t section_header_offset;
+  uint32_t flags;
+  uint16_t elf_header_size;
+  uint16_t ph_table_entry_size;
+  uint16_t ph_table_entry_count;
+  uint16_t sh_table_entry_size;
+  uint16_t sh_table_entry_count;
+  uint16_t sh_string_table_index;
 } elf_header;
 
 bool
