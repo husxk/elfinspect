@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "elf.h"
+#include "elf_header_log.h"
 #include "elf_header_parser.h"
 #include "file.h"
 
@@ -23,6 +24,8 @@ elf_inspect(file_t *f)
 
   if (!parse_elf_header(f, &header))
     return;
+
+  log_elf_header(&header);
 }
 
 int main(int argc, char *argv[])
