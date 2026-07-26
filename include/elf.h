@@ -1,34 +1,26 @@
 #pragma once
 
 #include <stdbool.h>
-#include <stddef.h>
 
 #include "elf_file_header.h"
+#include "elf_program_header.h"
+#include "elf_section_header.h"
+#include "file.h"
 
-bool is_elf_class_valid(elf_header *m);
+typedef struct elf elf_t;
 
-const char *get_elf_class_str(elf_header *m);
+struct elf
+{
+  file_t *file;
+  elf_header header;
+  elf_program_header_table *program_headers;
+  elf_section_header_table *section_headers;
+};
 
-bool is_elf_version_valid(elf_header *m);
+bool elf_create(elf_t **out, file_t *file);
+void elf_destroy(elf_t *elf);
+bool elf_parse(elf_t *elf);
 
-const char *get_elf_version_str(elf_header *m);
-
-bool is_elf_abi_valid(elf_header *m);
-
-const char *get_elf_abi_str(elf_header *m);
-
-bool is_elf_abi_version_valid(elf_header *m);
-
-void get_elf_abi_version_str(elf_header *m, char *buf, size_t buf_size);
-
-bool is_elf_type_valid(elf_header *m);
-
-const char *get_elf_type_str(elf_header *m);
-
-bool is_elf_machine_valid(elf_header *m);
-
-const char *get_elf_machine_str(elf_header *m);
-
-bool is_elf_header_version_valid(elf_header *m);
-
-const char *get_elf_header_version_str(elf_header *m);
+const elf_header *elf_ehdr(const elf_t *elf);
+const elf_program_header_table *elf_program_headers(const elf_t *elf);
+const elf_section_header_table *elf_section_headers(const elf_t *elf);

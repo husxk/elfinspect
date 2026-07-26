@@ -10,29 +10,6 @@ is_endian_valid(uint8_t endian)
   return endian == ELF_ENDIAN_LITTLE || endian == ELF_ENDIAN_BIG;
 }
 
-bool
-is_elf_endian_valid(const elf_header *header)
-{
-  if (!header)
-    return false;
-
-  return is_endian_valid(header->endian);
-}
-
-const char *
-get_elf_endian_str(const elf_header *header)
-{
-  if (!header)
-    return "unknown";
-
-  if (header->endian == ELF_ENDIAN_LITTLE)
-    return "little";
-  if (header->endian == ELF_ENDIAN_BIG)
-    return "big";
-
-  return "unrecognised";
-}
-
 static uint16_t
 to_host_u16(uint16_t v, uint8_t endian)
 {

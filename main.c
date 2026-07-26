@@ -2,11 +2,8 @@
 #include <stdio.h>
 
 #include "elf.h"
-#include "elf_file_header.h"
 #include "elf_header_log.h"
-#include "elf_program_header.h"
 #include "elf_program_header_log.h"
-#include "elf_section_header.h"
 #include "elf_section_header_log.h"
 #include "file.h"
 
@@ -24,40 +21,22 @@ static bool validate(int argc, char *argv[])
 static void
 elf_inspect(file_t *f)
 {
-  elf_header header = {0};
+  elf_t *elf = NULL;
 
-  if (!parse_elf_header(f, &header))
+  if (!elf_create(&elf, f))
     return;
 
-  log_elf_header(&header);
-
-  elf_program_header_table *ph_table = NULL;
-  if (!elf_program_header_table_create(header.ph_table_entry_count, &ph_table))
-    return;
-
-  if (!parse_elf_program_headers(f, &header, ph_table))
+  if (!elf_parse(elf))
   {
-    elf_program_header_table_destroy(ph_table);
+    elf_destroy(elf);
     return;
   }
 
-  log_elf_program_headers(&header, ph_table);
+  log_elf_header(elf_ehdr(elf));
+  log_elf_program_headers(elf_ehdr(elf), elf_program_headers(elf));
+  log_elf_section_headers(elf_ehdr(elf), elf_section_headers(elf));
 
-  elf_program_header_table_destroy(ph_table);
-
-  elf_section_header_table *sh_table = NULL;
-  if (!elf_section_header_table_create(header.sh_table_entry_count, &sh_table))
-    return;
-
-  if (!parse_elf_section_headers(f, &header, sh_table))
-  {
-    elf_section_header_table_destroy(sh_table);
-    return;
-  }
-
-  log_elf_section_headers(&header, sh_table);
-
-  elf_section_header_table_destroy(sh_table);
+  elf_destroy(elf);
 }
 
 int main(int argc, char *argv[])
