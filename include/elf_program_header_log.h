@@ -1,6 +1,6 @@
 #pragma once
 
-#include "elf.h"
+#include "elf_file_header.h"
 #include "elf_program_header.h"
 
 void log_elf_program_header_entry(const elf_header *eh, size_t index,

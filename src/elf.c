@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-static const char elf_magic_valid[] = "\x7f" "ELF";
-
 #define ELF_VERSION_CURRENT 0x01
 
 #define ELF_OSABI_SYSV     0x00
@@ -41,15 +39,6 @@ static const char elf_magic_valid[] = "\x7f" "ELF";
 #define ELF_MACHINE_X86_64   62
 #define ELF_MACHINE_AARCH64  183
 #define ELF_MACHINE_RISCV    243
-
-bool
-is_elf_magic_valid(elf_magic *m)
-{
-  if (!m)
-    return false;
-
-  return memcmp(m->bytes, elf_magic_valid, sizeof(m->bytes)) == 0;
-}
 
 bool
 is_elf_class_valid(elf_header *m)

@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "elf.h"
+#include "elf_file_header.h"
 #include "file.h"
 
 #define ELF_SHT_NULL         0x0

@@ -2,8 +2,8 @@
 #include <stdio.h>
 
 #include "elf.h"
+#include "elf_file_header.h"
 #include "elf_header_log.h"
-#include "elf_header_parser.h"
 #include "elf_program_header.h"
 #include "elf_program_header_log.h"
 #include "elf_section_header.h"
