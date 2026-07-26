@@ -6,6 +6,8 @@
 #include "elf_header_parser.h"
 #include "elf_program_header.h"
 #include "elf_program_header_log.h"
+#include "elf_section_header.h"
+#include "elf_section_header_log.h"
 #include "file.h"
 
 static void usage(const char *prog)
@@ -42,6 +44,20 @@ elf_inspect(file_t *f)
   log_elf_program_headers(&header, ph_table);
 
   elf_program_header_table_destroy(ph_table);
+
+  elf_section_header_table *sh_table = NULL;
+  if (!elf_section_header_table_create(header.sh_table_entry_count, &sh_table))
+    return;
+
+  if (!parse_elf_section_headers(f, &header, sh_table))
+  {
+    elf_section_header_table_destroy(sh_table);
+    return;
+  }
+
+  log_elf_section_headers(&header, sh_table);
+
+  elf_section_header_table_destroy(sh_table);
 }
 
 int main(int argc, char *argv[])
