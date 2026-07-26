@@ -62,6 +62,25 @@ bool file_close(file_t *f)
   return ok;
 }
 
+bool
+file_seek(file_t *f, uint64_t offset)
+{
+  if (!f || !f->fp)
+  {
+    fprintf(stderr, "file_seek: file is not open\n");
+    return false;
+  }
+
+  if (fseeko(f->fp, (off_t)offset, SEEK_SET) != 0)
+  {
+    fprintf(stderr, "file_seek: seek to %llu failed: %s\n", (unsigned long long)offset,
+            strerror(errno));
+    return false;
+  }
+
+  return true;
+}
+
 int file_read(file_t *f, void *buf, size_t buf_size, size_t count)
 {
   if (!f || !f->fp)
