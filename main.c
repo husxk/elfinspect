@@ -34,7 +34,7 @@ elf_inspect(file_t *f)
 
   log_elf_header(elf_ehdr(elf));
   log_elf_program_headers(elf_ehdr(elf), elf_program_headers(elf));
-  log_elf_section_headers(elf_ehdr(elf), elf_section_headers(elf));
+  log_elf_section_headers(elf_ehdr(elf), elf_section_headers(elf), elf_shstrtab(elf));
 
   elf_destroy(elf);
 }

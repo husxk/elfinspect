@@ -5,6 +5,7 @@
 #include "elf_file_header.h"
 #include "elf_program_header.h"
 #include "elf_section_header.h"
+#include "elf_string_table.h"
 #include "file.h"
 
 typedef struct elf elf_t;
@@ -15,6 +16,7 @@ struct elf
   elf_header header;
   elf_program_header_table *program_headers;
   elf_section_header_table *section_headers;
+  elf_string_table *shstrtab;
 };
 
 bool elf_create(elf_t **out, file_t *file);
@@ -24,3 +26,4 @@ bool elf_parse(elf_t *elf);
 const elf_header *elf_ehdr(const elf_t *elf);
 const elf_program_header_table *elf_program_headers(const elf_t *elf);
 const elf_section_header_table *elf_section_headers(const elf_t *elf);
+const elf_string_table *elf_shstrtab(const elf_t *elf);

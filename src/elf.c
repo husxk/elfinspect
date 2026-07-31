@@ -1,5 +1,6 @@
 #include "elf.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -20,6 +21,50 @@ elf_clear_tables(elf_t *elf)
     elf_section_header_table_destroy(elf->section_headers);
     elf->section_headers = NULL;
   }
+
+  if (elf->shstrtab)
+  {
+    elf_string_table_destroy(elf->shstrtab);
+    elf->shstrtab = NULL;
+  }
+}
+
+static bool
+elf_parse_shstrtab(elf_t *elf)
+{
+  elf_header *eh;
+  const elf_section_header *shstrtab_sh;
+
+  if (!elf || !elf->section_headers)
+  {
+    fprintf(stderr, "elf_parse_shstrtab: section headers not loaded\n");
+    return false;
+  }
+
+  eh = &elf->header;
+
+  if (eh->sh_table_entry_count == 0)
+    return true;
+
+  if (eh->sh_string_table_index >= eh->sh_table_entry_count)
+  {
+    fprintf(stderr,
+            "elf_parse_shstrtab: sh_string_table_index %u out of range (count %u)\n",
+            eh->sh_string_table_index, eh->sh_table_entry_count);
+    return false;
+  }
+
+  shstrtab_sh = &elf->section_headers->entries[eh->sh_string_table_index];
+
+  if (shstrtab_sh->type != ELF_SHT_STRTAB)
+  {
+    fprintf(stderr,
+            "elf_parse_shstrtab: section %u is type 0x%08" PRIx32 ", expected STRTAB\n",
+            eh->sh_string_table_index, shstrtab_sh->type);
+    return false;
+  }
+
+  return parse_elf_string_table(elf->file, shstrtab_sh->offset, shstrtab_sh->size, &elf->shstrtab);
 }
 
 bool
@@ -100,6 +145,12 @@ elf_parse(elf_t *elf)
     return false;
   }
 
+  if (!elf_parse_shstrtab(elf))
+  {
+    elf_clear_tables(elf);
+    return false;
+  }
+
   return true;
 }
 
@@ -128,4 +179,13 @@ elf_section_headers(const elf_t *elf)
     return NULL;
 
   return elf->section_headers;
+}
+
+const elf_string_table *
+elf_shstrtab(const elf_t *elf)
+{
+  if (!elf)
+    return NULL;
+
+  return elf->shstrtab;
 }

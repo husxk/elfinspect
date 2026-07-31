@@ -7,6 +7,7 @@
 
 #include "elf_endian.h"
 #include "elf_section_header.h"
+#include "elf_string_table.h"
 
 #define LABEL_WIDTH 36
 
@@ -103,9 +104,11 @@ log_elf_section_header_flags(uint64_t flags)
 }
 
 void
-log_elf_section_header_entry(const elf_header *eh, size_t index, const elf_section_header *entry)
+log_elf_section_header_entry(const elf_header *eh, const elf_string_table *shstrtab, size_t index,
+                             const elf_section_header *entry)
 {
   int addr_width;
+  const char *name;
 
   if (!eh || !entry)
     return;
@@ -114,7 +117,11 @@ log_elf_section_header_entry(const elf_header *eh, size_t index, const elf_secti
 
   printf("Section Header %zu\n", index);
 
-  log_field("Name index:", "%" PRIu32, entry->name);
+  name = shstrtab ? elf_string_table_get(shstrtab, entry->name) : NULL;
+  if (name)
+    log_field("Name:", "%s (%" PRIu32 ")", name, entry->name);
+  else
+    log_field("Name index:", "%" PRIu32, entry->name);
 
   {
     const char *type_name = get_elf_sht_type_str(entry->type);
@@ -136,7 +143,8 @@ log_elf_section_header_entry(const elf_header *eh, size_t index, const elf_secti
 }
 
 void
-log_elf_section_headers(const elf_header *eh, const elf_section_header_table *table)
+log_elf_section_headers(const elf_header *eh, const elf_section_header_table *table,
+                        const elf_string_table *shstrtab)
 {
   if (!eh || !table)
     return;
@@ -154,6 +162,6 @@ log_elf_section_headers(const elf_header *eh, const elf_section_header_table *ta
     if (i > 0)
       printf("\n");
 
-    log_elf_section_header_entry(eh, i, &table->entries[i]);
+    log_elf_section_header_entry(eh, shstrtab, i, &table->entries[i]);
   }
 }
