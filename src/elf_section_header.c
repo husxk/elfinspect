@@ -196,3 +196,44 @@ parse_elf_section_headers(file_t *f, elf_header *eh, elf_section_header_table *t
 
   return true;
 }
+
+bool
+elf_section_header_is_type(const elf_section_header_table *table, size_t index, uint32_t type)
+{
+  if (!table || !table->entries)
+    return false;
+
+  if (index >= table->count)
+    return false;
+
+  return table->entries[index].type == type;
+}
+
+bool
+elf_section_header_table_at(const elf_section_header_table *table, size_t index,
+                          const elf_section_header **out)
+{
+  if (!out)
+  {
+    fprintf(stderr, "elf_section_header_table_at: output pointer is null\n");
+    return false;
+  }
+
+  *out = NULL;
+
+  if (!table || !table->entries)
+  {
+    fprintf(stderr, "elf_section_header_table_at: table is null\n");
+    return false;
+  }
+
+  if (index >= table->count)
+  {
+    fprintf(stderr, "elf_section_header_table_at: index %zu out of range (count %zu)\n", index,
+            table->count);
+    return false;
+  }
+
+  *out = &table->entries[index];
+  return true;
+}

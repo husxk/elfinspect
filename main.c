@@ -6,6 +6,7 @@
 #include "elf_header_log.h"
 #include "elf_program_header_log.h"
 #include "elf_section_header_log.h"
+#include "elf_symbol_log.h"
 #include "file.h"
 
 typedef struct
@@ -13,6 +14,7 @@ typedef struct
   bool show_file_header;
   bool show_program_headers;
   bool show_section_headers;
+  bool show_symbols;
 } inspect_options;
 
 typedef enum
@@ -34,6 +36,7 @@ usage(const char *prog)
           "  -h, --file-header       ELF file header\n"
           "  -l, --program-headers   Program headers\n"
           "  -S, --section-headers   Section headers\n"
+          "  -s, --symbols           Symbol tables\n"
           "      --help              Show this help\n",
           prog);
 }
@@ -45,6 +48,7 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
       {"file-header", no_argument, NULL, 'h'},
       {"program-headers", no_argument, NULL, 'l'},
       {"section-headers", no_argument, NULL, 'S'},
+      {"symbols", no_argument, NULL, 's'},
       {"help", no_argument, NULL, 'H'},
       {NULL, 0, NULL, 0},
   };
@@ -54,13 +58,14 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
   opts->show_file_header = false;
   opts->show_program_headers = false;
   opts->show_section_headers = false;
+  opts->show_symbols = false;
   *path_out = NULL;
 
   opterr = 0;
 
   for (;;)
   {
-    int c = getopt_long(argc, argv, "hlS", long_options, NULL);
+    int c = getopt_long(argc, argv, "hlSs", long_options, NULL);
 
     if (c == -1)
       break;
@@ -79,6 +84,11 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
 
     case 'S':
       opts->show_section_headers = true;
+      any_display = true;
+      break;
+
+    case 's':
+      opts->show_symbols = true;
       any_display = true;
       break;
 
@@ -147,6 +157,10 @@ elf_inspect(file_t *f, const inspect_options *opts)
 
   if (opts->show_section_headers)
     log_elf_section_headers(elf_ehdr(elf), elf_section_headers(elf), elf_shstrtab(elf));
+
+  if (opts->show_symbols)
+    log_elf_symbols(elf_ehdr(elf), elf_section_headers(elf), elf_shstrtab(elf),
+                    elf_symbol_tables(elf));
 
   elf_destroy(elf);
 }

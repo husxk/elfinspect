@@ -123,6 +123,15 @@ elf_read_u64(file_t *f, elf_header *header, uint64_t *out)
   return true;
 }
 
+bool
+elf_read_u8(file_t *f, elf_header *header, uint8_t *out)
+{
+  if (!out || !elf_read_multibyte(f, header, out, sizeof(*out)))
+    return false;
+
+  return true;
+}
+
 size_t
 elf_word_size(const elf_header *header)
 {

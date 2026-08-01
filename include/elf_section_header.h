@@ -78,3 +78,9 @@ void elf_section_header_table_destroy(elf_section_header_table *table);
 bool parse_elf_section_header_entry(file_t *f, elf_header *eh, size_t index,
                                       elf_section_header *out);
 bool parse_elf_section_headers(file_t *f, elf_header *eh, elf_section_header_table *table);
+
+bool elf_section_header_is_type(const elf_section_header_table *table, size_t index,
+                                uint32_t type);
+
+bool elf_section_header_table_at(const elf_section_header_table *table, size_t index,
+                                 const elf_section_header **out);
