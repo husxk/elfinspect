@@ -7,3 +7,5 @@
 
 void log_elf_dynamic(const elf_header *eh, const elf_section_header_table *sections,
                      const elf_string_table *shstrtab, const elf_dynamic *dynamic);
+
+void log_elf_needed_libraries(const elf_dynamic *dynamic);

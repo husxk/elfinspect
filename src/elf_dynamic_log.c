@@ -244,3 +244,25 @@ log_elf_dynamic(const elf_header *eh, const elf_section_header_table *sections,
   (void)sections;
   (void)shstrtab;
 }
+
+void
+log_elf_needed_libraries(const elf_dynamic *dynamic)
+{
+  if (!dynamic)
+    return;
+
+  for (size_t i = 0; i < dynamic->count; i++)
+  {
+    const elf_dynamic_entry *entry = &dynamic->entries[i];
+    const char *name;
+
+    if (entry->tag != ELF_DT_NEEDED)
+      continue;
+
+    name = dynamic->dynstr ? elf_string_table_get(dynamic->dynstr, (uint32_t)entry->value) : NULL;
+    if (!name || name[0] == '\0')
+      continue;
+
+    printf("%s\n", name);
+  }
+}

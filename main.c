@@ -17,6 +17,7 @@ typedef struct
   bool show_section_headers;
   bool show_symbols;
   bool show_dynamic;
+  bool show_needed;
 } inspect_options;
 
 typedef enum
@@ -40,6 +41,7 @@ usage(const char *prog)
           "  -S, --section-headers   Section headers\n"
           "  -s, --symbols           Symbol tables\n"
           "  -d, --dynamic           Dynamic section\n"
+          "  -N, --needed            Needed shared libraries (DT_NEEDED)\n"
           "      --help              Show this help\n",
           prog);
 }
@@ -53,6 +55,7 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
       {"section-headers", no_argument, NULL, 'S'},
       {"symbols", no_argument, NULL, 's'},
       {"dynamic", no_argument, NULL, 'd'},
+      {"needed", no_argument, NULL, 'N'},
       {"help", no_argument, NULL, 'H'},
       {NULL, 0, NULL, 0},
   };
@@ -64,13 +67,14 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
   opts->show_section_headers = false;
   opts->show_symbols = false;
   opts->show_dynamic = false;
+  opts->show_needed = false;
   *path_out = NULL;
 
   opterr = 0;
 
   for (;;)
   {
-    int c = getopt_long(argc, argv, "hlSsd", long_options, NULL);
+    int c = getopt_long(argc, argv, "hlSsdN", long_options, NULL);
 
     if (c == -1)
       break;
@@ -99,6 +103,11 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
 
     case 'd':
       opts->show_dynamic = true;
+      any_display = true;
+      break;
+
+    case 'N':
+      opts->show_needed = true;
       any_display = true;
       break;
 
@@ -175,6 +184,9 @@ elf_inspect(file_t *f, const inspect_options *opts)
   if (opts->show_dynamic && elf_dynamic_section(elf))
     log_elf_dynamic(elf_ehdr(elf), elf_section_headers(elf), elf_shstrtab(elf),
                     elf_dynamic_section(elf));
+
+  if (opts->show_needed && elf_dynamic_section(elf))
+    log_elf_needed_libraries(elf_dynamic_section(elf));
 
   elf_destroy(elf);
 }
