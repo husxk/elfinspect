@@ -7,6 +7,7 @@
 #include "elf_section_header.h"
 #include "elf_string_table.h"
 #include "elf_symbol.h"
+#include "elf_dynamic.h"
 #include "file.h"
 
 typedef struct elf elf_t;
@@ -19,6 +20,7 @@ struct elf
   elf_section_header_table *section_headers;
   elf_string_table *shstrtab;
   elf_symbol_table_set *symbol_tables;
+  elf_dynamic *dynamic;
 };
 
 bool elf_create(elf_t **out, file_t *file);
@@ -30,3 +32,4 @@ const elf_program_header_table *elf_program_headers(const elf_t *elf);
 const elf_section_header_table *elf_section_headers(const elf_t *elf);
 const elf_string_table *elf_shstrtab(const elf_t *elf);
 const elf_symbol_table_set *elf_symbol_tables(const elf_t *elf);
+const elf_dynamic *elf_dynamic_section(const elf_t *elf);

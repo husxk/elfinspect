@@ -33,6 +33,12 @@ elf_clear_tables(elf_t *elf)
     elf_symbol_table_set_destroy(elf->symbol_tables);
     elf->symbol_tables = NULL;
   }
+
+  if (elf->dynamic)
+  {
+    elf_dynamic_destroy(elf->dynamic);
+    elf->dynamic = NULL;
+  }
 }
 
 static bool
@@ -83,6 +89,18 @@ elf_parse_symbol_tables(elf_t *elf)
   }
 
   return parse_elf_symbol_tables(elf->file, &elf->header, elf->section_headers, &elf->symbol_tables);
+}
+
+static bool
+elf_parse_dynamic(elf_t *elf)
+{
+  if (!elf || !elf->section_headers)
+  {
+    fprintf(stderr, "elf_parse_dynamic: section headers not loaded\n");
+    return false;
+  }
+
+  return parse_elf_dynamic(elf->file, &elf->header, elf->section_headers, &elf->dynamic);
 }
 
 bool
@@ -175,6 +193,12 @@ elf_parse(elf_t *elf)
     return false;
   }
 
+  if (!elf_parse_dynamic(elf))
+  {
+    elf_clear_tables(elf);
+    return false;
+  }
+
   return true;
 }
 
@@ -221,4 +245,13 @@ elf_symbol_tables(const elf_t *elf)
     return NULL;
 
   return elf->symbol_tables;
+}
+
+const elf_dynamic *
+elf_dynamic_section(const elf_t *elf)
+{
+  if (!elf)
+    return NULL;
+
+  return elf->dynamic;
 }

@@ -7,6 +7,7 @@
 #include "elf_program_header_log.h"
 #include "elf_section_header_log.h"
 #include "elf_symbol_log.h"
+#include "elf_dynamic_log.h"
 #include "file.h"
 
 typedef struct
@@ -15,6 +16,7 @@ typedef struct
   bool show_program_headers;
   bool show_section_headers;
   bool show_symbols;
+  bool show_dynamic;
 } inspect_options;
 
 typedef enum
@@ -37,6 +39,7 @@ usage(const char *prog)
           "  -l, --program-headers   Program headers\n"
           "  -S, --section-headers   Section headers\n"
           "  -s, --symbols           Symbol tables\n"
+          "  -d, --dynamic           Dynamic section\n"
           "      --help              Show this help\n",
           prog);
 }
@@ -49,6 +52,7 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
       {"program-headers", no_argument, NULL, 'l'},
       {"section-headers", no_argument, NULL, 'S'},
       {"symbols", no_argument, NULL, 's'},
+      {"dynamic", no_argument, NULL, 'd'},
       {"help", no_argument, NULL, 'H'},
       {NULL, 0, NULL, 0},
   };
@@ -59,13 +63,14 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
   opts->show_program_headers = false;
   opts->show_section_headers = false;
   opts->show_symbols = false;
+  opts->show_dynamic = false;
   *path_out = NULL;
 
   opterr = 0;
 
   for (;;)
   {
-    int c = getopt_long(argc, argv, "hlSs", long_options, NULL);
+    int c = getopt_long(argc, argv, "hlSsd", long_options, NULL);
 
     if (c == -1)
       break;
@@ -89,6 +94,11 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
 
     case 's':
       opts->show_symbols = true;
+      any_display = true;
+      break;
+
+    case 'd':
+      opts->show_dynamic = true;
       any_display = true;
       break;
 
@@ -161,6 +171,10 @@ elf_inspect(file_t *f, const inspect_options *opts)
   if (opts->show_symbols)
     log_elf_symbols(elf_ehdr(elf), elf_section_headers(elf), elf_shstrtab(elf),
                     elf_symbol_tables(elf));
+
+  if (opts->show_dynamic && elf_dynamic_section(elf))
+    log_elf_dynamic(elf_ehdr(elf), elf_section_headers(elf), elf_shstrtab(elf),
+                    elf_dynamic_section(elf));
 
   elf_destroy(elf);
 }
