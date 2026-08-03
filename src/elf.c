@@ -45,6 +45,12 @@ elf_clear_tables(elf_t *elf)
     elf_note_table_set_destroy(elf->notes);
     elf->notes = NULL;
   }
+
+  if (elf->interp)
+  {
+    elf_interp_destroy(elf->interp);
+    elf->interp = NULL;
+  }
 }
 
 static bool
@@ -121,6 +127,18 @@ elf_parse_notes(elf_t *elf)
   return parse_elf_note_tables(elf->file, &elf->header, elf->section_headers, &elf->notes);
 }
 
+static bool
+elf_parse_interp(elf_t *elf)
+{
+  if (!elf || !elf->program_headers)
+  {
+    fprintf(stderr, "elf_parse_interp: program headers not loaded\n");
+    return false;
+  }
+
+  return parse_elf_interp(elf->file, &elf->header, elf->program_headers, &elf->interp);
+}
+
 bool
 elf_create(elf_t **out, file_t *file)
 {
@@ -182,6 +200,12 @@ elf_parse(elf_t *elf)
     return false;
 
   if (!parse_elf_program_headers(elf->file, &elf->header, elf->program_headers))
+  {
+    elf_clear_tables(elf);
+    return false;
+  }
+
+  if (!elf_parse_interp(elf))
   {
     elf_clear_tables(elf);
     return false;
@@ -287,4 +311,13 @@ elf_notes(const elf_t *elf)
     return NULL;
 
   return elf->notes;
+}
+
+const char *
+elf_interp(const elf_t *elf)
+{
+  if (!elf)
+    return NULL;
+
+  return elf->interp;
 }

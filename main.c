@@ -9,6 +9,7 @@
 #include "elf_symbol_log.h"
 #include "elf_dynamic_log.h"
 #include "elf_note_log.h"
+#include "elf_interp_log.h"
 #include "file.h"
 
 typedef struct
@@ -20,6 +21,7 @@ typedef struct
   bool show_dynamic;
   bool show_needed;
   bool show_notes;
+  bool show_interp;
 } inspect_options;
 
 typedef enum
@@ -45,6 +47,7 @@ usage(const char *prog)
           "  -d, --dynamic           Dynamic section\n"
           "  -N, --needed            Needed shared libraries (DT_NEEDED)\n"
           "  -n, --notes             Note sections\n"
+          "  -I, --interp            Program interpreter (PT_INTERP)\n"
           "      --help              Show this help\n",
           prog);
 }
@@ -60,6 +63,7 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
       {"dynamic", no_argument, NULL, 'd'},
       {"needed", no_argument, NULL, 'N'},
       {"notes", no_argument, NULL, 'n'},
+      {"interp", no_argument, NULL, 'I'},
       {"help", no_argument, NULL, 'H'},
       {NULL, 0, NULL, 0},
   };
@@ -73,13 +77,14 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
   opts->show_dynamic = false;
   opts->show_needed = false;
   opts->show_notes = false;
+  opts->show_interp = false;
   *path_out = NULL;
 
   opterr = 0;
 
   for (;;)
   {
-    int c = getopt_long(argc, argv, "hlSsdNn", long_options, NULL);
+    int c = getopt_long(argc, argv, "hlSsdNnI", long_options, NULL);
 
     if (c == -1)
       break;
@@ -118,6 +123,11 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
 
     case 'n':
       opts->show_notes = true;
+      any_display = true;
+      break;
+
+    case 'I':
+      opts->show_interp = true;
       any_display = true;
       break;
 
@@ -200,6 +210,9 @@ elf_inspect(file_t *f, const inspect_options *opts)
 
   if (opts->show_notes && elf_notes(elf))
     log_elf_notes(elf_ehdr(elf), elf_section_headers(elf), elf_shstrtab(elf), elf_notes(elf));
+
+  if (opts->show_interp && elf_interp(elf))
+    log_elf_interp(elf_interp(elf));
 
   elf_destroy(elf);
 }
