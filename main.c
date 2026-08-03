@@ -8,6 +8,7 @@
 #include "elf_section_header_log.h"
 #include "elf_symbol_log.h"
 #include "elf_dynamic_log.h"
+#include "elf_note_log.h"
 #include "file.h"
 
 typedef struct
@@ -18,6 +19,7 @@ typedef struct
   bool show_symbols;
   bool show_dynamic;
   bool show_needed;
+  bool show_notes;
 } inspect_options;
 
 typedef enum
@@ -42,6 +44,7 @@ usage(const char *prog)
           "  -s, --symbols           Symbol tables\n"
           "  -d, --dynamic           Dynamic section\n"
           "  -N, --needed            Needed shared libraries (DT_NEEDED)\n"
+          "  -n, --notes             Note sections\n"
           "      --help              Show this help\n",
           prog);
 }
@@ -56,6 +59,7 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
       {"symbols", no_argument, NULL, 's'},
       {"dynamic", no_argument, NULL, 'd'},
       {"needed", no_argument, NULL, 'N'},
+      {"notes", no_argument, NULL, 'n'},
       {"help", no_argument, NULL, 'H'},
       {NULL, 0, NULL, 0},
   };
@@ -68,13 +72,14 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
   opts->show_symbols = false;
   opts->show_dynamic = false;
   opts->show_needed = false;
+  opts->show_notes = false;
   *path_out = NULL;
 
   opterr = 0;
 
   for (;;)
   {
-    int c = getopt_long(argc, argv, "hlSsdN", long_options, NULL);
+    int c = getopt_long(argc, argv, "hlSsdNn", long_options, NULL);
 
     if (c == -1)
       break;
@@ -108,6 +113,11 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
 
     case 'N':
       opts->show_needed = true;
+      any_display = true;
+      break;
+
+    case 'n':
+      opts->show_notes = true;
       any_display = true;
       break;
 
@@ -187,6 +197,9 @@ elf_inspect(file_t *f, const inspect_options *opts)
 
   if (opts->show_needed && elf_dynamic_section(elf))
     log_elf_needed_libraries(elf_dynamic_section(elf));
+
+  if (opts->show_notes && elf_notes(elf))
+    log_elf_notes(elf_ehdr(elf), elf_section_headers(elf), elf_shstrtab(elf), elf_notes(elf));
 
   elf_destroy(elf);
 }

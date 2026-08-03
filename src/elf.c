@@ -39,6 +39,12 @@ elf_clear_tables(elf_t *elf)
     elf_dynamic_destroy(elf->dynamic);
     elf->dynamic = NULL;
   }
+
+  if (elf->notes)
+  {
+    elf_note_table_set_destroy(elf->notes);
+    elf->notes = NULL;
+  }
 }
 
 static bool
@@ -101,6 +107,18 @@ elf_parse_dynamic(elf_t *elf)
   }
 
   return parse_elf_dynamic(elf->file, &elf->header, elf->section_headers, &elf->dynamic);
+}
+
+static bool
+elf_parse_notes(elf_t *elf)
+{
+  if (!elf || !elf->section_headers)
+  {
+    fprintf(stderr, "elf_parse_notes: section headers not loaded\n");
+    return false;
+  }
+
+  return parse_elf_note_tables(elf->file, &elf->header, elf->section_headers, &elf->notes);
 }
 
 bool
@@ -199,6 +217,12 @@ elf_parse(elf_t *elf)
     return false;
   }
 
+  if (!elf_parse_notes(elf))
+  {
+    elf_clear_tables(elf);
+    return false;
+  }
+
   return true;
 }
 
@@ -254,4 +278,13 @@ elf_dynamic_section(const elf_t *elf)
     return NULL;
 
   return elf->dynamic;
+}
+
+const elf_note_table_set *
+elf_notes(const elf_t *elf)
+{
+  if (!elf)
+    return NULL;
+
+  return elf->notes;
 }
