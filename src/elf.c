@@ -51,6 +51,12 @@ elf_clear_tables(elf_t *elf)
     elf_interp_destroy(elf->interp);
     elf->interp = NULL;
   }
+
+  if (elf->relocs)
+  {
+    elf_reloc_table_set_destroy(elf->relocs);
+    elf->relocs = NULL;
+  }
 }
 
 static bool
@@ -137,6 +143,18 @@ elf_parse_interp(elf_t *elf)
   }
 
   return parse_elf_interp(elf->file, &elf->header, elf->program_headers, &elf->interp);
+}
+
+static bool
+elf_parse_relocs(elf_t *elf)
+{
+  if (!elf || !elf->section_headers)
+  {
+    fprintf(stderr, "elf_parse_relocs: section headers not loaded\n");
+    return false;
+  }
+
+  return parse_elf_reloc_tables(elf->file, &elf->header, elf->section_headers, &elf->relocs);
 }
 
 bool
@@ -235,6 +253,12 @@ elf_parse(elf_t *elf)
     return false;
   }
 
+  if (!elf_parse_relocs(elf))
+  {
+    elf_clear_tables(elf);
+    return false;
+  }
+
   if (!elf_parse_dynamic(elf))
   {
     elf_clear_tables(elf);
@@ -320,4 +344,13 @@ elf_interp(const elf_t *elf)
     return NULL;
 
   return elf->interp;
+}
+
+const elf_reloc_table_set *
+elf_relocs(const elf_t *elf)
+{
+  if (!elf)
+    return NULL;
+
+  return elf->relocs;
 }

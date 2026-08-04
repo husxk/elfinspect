@@ -10,6 +10,7 @@
 #include "elf_dynamic_log.h"
 #include "elf_note_log.h"
 #include "elf_interp_log.h"
+#include "elf_reloc_log.h"
 #include "file.h"
 
 typedef struct
@@ -22,6 +23,7 @@ typedef struct
   bool show_needed;
   bool show_notes;
   bool show_interp;
+  bool show_relocs;
 } inspect_options;
 
 typedef enum
@@ -48,6 +50,7 @@ usage(const char *prog)
           "  -N, --needed            Needed shared libraries (DT_NEEDED)\n"
           "  -n, --notes             Note sections\n"
           "  -I, --interp            Program interpreter (PT_INTERP)\n"
+          "  -r, --relocs            Relocation sections\n"
           "      --help              Show this help\n",
           prog);
 }
@@ -64,6 +67,7 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
       {"needed", no_argument, NULL, 'N'},
       {"notes", no_argument, NULL, 'n'},
       {"interp", no_argument, NULL, 'I'},
+      {"relocs", no_argument, NULL, 'r'},
       {"help", no_argument, NULL, 'H'},
       {NULL, 0, NULL, 0},
   };
@@ -78,13 +82,14 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
   opts->show_needed = false;
   opts->show_notes = false;
   opts->show_interp = false;
+  opts->show_relocs = false;
   *path_out = NULL;
 
   opterr = 0;
 
   for (;;)
   {
-    int c = getopt_long(argc, argv, "hlSsdNnI", long_options, NULL);
+    int c = getopt_long(argc, argv, "hlSsdNnIr", long_options, NULL);
 
     if (c == -1)
       break;
@@ -128,6 +133,11 @@ parse_options(int argc, char *argv[], inspect_options *opts, const char **path_o
 
     case 'I':
       opts->show_interp = true;
+      any_display = true;
+      break;
+
+    case 'r':
+      opts->show_relocs = true;
       any_display = true;
       break;
 
@@ -213,6 +223,10 @@ elf_inspect(file_t *f, const inspect_options *opts)
 
   if (opts->show_interp && elf_interp(elf))
     log_elf_interp(elf_interp(elf));
+
+  if (opts->show_relocs && elf_relocs(elf))
+    log_elf_relocs(elf_ehdr(elf), elf_section_headers(elf), elf_shstrtab(elf),
+                   elf_symbol_tables(elf), elf_relocs(elf));
 
   elf_destroy(elf);
 }
